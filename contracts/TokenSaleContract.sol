@@ -3,18 +3,23 @@ pragma solidity ^0.8.0;
 import "./TheBlockchainCoders.sol";
 
 contract TokenSale {
-    address admin;
+    address payable public admin;
     TheBlockchainCoders public tokenContract;
     uint256 public tokenPrice;
     uint256 public tokensSold;
+    uint256 public totalTokenSupply;
 
     event Sell(address _buyer, uint256 _amount);
 
-    constructor(TheBlockchainCoders _tokenContract, uint256 _tokenPrice){
-        admin = msg.sender;
+    constructor(TheBlockchainCoders _tokenContract, uint256 _tokenPrice, uint256 _totalTokenSupply){
+        admin = payable(msg.sender);
         tokenContract = _tokenContract;
         tokenPrice = _tokenPrice;
+        totalTokenSupply = _totalTokenSupply;
+    }
 
+    function updateSupply (uint256 _totalTokenSupply) public payable {
+        totalTokenSupply = _totalTokenSupply;
     }
 
     function multiply(uint256 x , uint256 y) internal pure returns (uint256 z){
@@ -29,6 +34,8 @@ contract TokenSale {
 
         tokensSold += _numberOfTokens;
 
+        admin.transfer(msg.value);
+
         emit Sell(msg.sender, _numberOfTokens);
 
     }
@@ -38,6 +45,6 @@ contract TokenSale {
         
         require(tokenContract.transfer(admin, tokenContract.balanceOf(address(this))));
 
-        payable(admin).transfer(address(this).balance);
+        admin.transfer(address(this).balance);
     }
 }
